@@ -1,0 +1,27 @@
+##Определить суммарную стоимость билетов женщин , севших в порту Квинстаун,
+##в возрастном интервале мода +- 10 лет 29.
+import csv
+filename = "train.csv"
+dict_age_fare = {} ##словарь ключ (возраст) - значение (стоимость билета)
+dict_age={} ##словарь ключ (возраст) - значение (количество женщин этого возраста)
+with open(filename, "r", newline="", encoding='utf-8') as file:
+    reader = csv.DictReader(file) ##объект для чтения из файла
+    for row in reader:
+        ##проверка условий + не учитываем женщин, у которых неизвестен возраст и/или стоимость их билета
+        if row["Embarked"] == "Q" and row["Sex"] == "female" and row["Age"]!='' and row["Fare"]!='': 
+            if row["Age"] in dict_age: ##если такой возраст есть в dict_age
+                dict_age[f"{row['Age']}"]+=1 ##то увеличиваем количество женщин этого возраста
+                ##суммируем стоимости билетов женщин одного возраста
+                dict_age_fare[f"{row['Age']}"] = float(row["Fare"]) + dict_age_fare[f"{row['Age']}"]
+            else:
+                dict_age[f"{row['Age']}"] = 1 ##иначе просто добавляем новый возраст и устанавливаем значение ключа=1
+                dict_age_fare[f"{row['Age']}"] = float(row["Fare"]) ##добавляем новый возраст с величиной стоимости билета
+    ##находим моду для ряда возрастов женщин, севших в порту Квинстаун
+    moda_age = int(sorted(dict_age.items(), key = lambda item: item[1], reverse = True)[0][0])
+    left_border = moda_age - 10 ##интервал возрастов мода+-10
+    right_border = moda_age + 10
+    fare_sum = 0 ##стоимость билетов
+    for key in dict_age_fare:
+        if left_border <=float(key)<= right_border:
+            fare_sum += dict_age_fare[key]
+print(f"Мода = {moda_age}\nСуммарная стоимость билетов женщин в возрасте {left_border}-{right_border} лет, севших в порту Квинстаун, составила {fare_sum} фунтов")
